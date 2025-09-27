@@ -10,6 +10,12 @@
 		4A0000001A000001 /* StartupManagerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000002A000001 /* StartupManagerApp.swift */; };
 		4A0000003A000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000004A000001 /* ContentView.swift */; };
 		4A0000005A000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4A0000006A000001 /* Assets.xcassets */; };
+		4A0000007A000001 /* LaunchItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000008A000001 /* LaunchItem.swift */; };
+		4A0000009A000001 /* LoginItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A000000AA000001 /* LoginItem.swift */; };
+		4A000000BA000001 /* LaunchAgent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A000000CA000001 /* LaunchAgent.swift */; };
+		4A000000DA000001 /* LaunchDaemon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A000000EA000001 /* LaunchDaemon.swift */; };
+		4A000000FA000001 /* PlistParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000010A000002 /* PlistParser.swift */; };
+		4A0000011A000001 /* LaunchItemManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000012A000001 /* LaunchItemManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -17,6 +23,12 @@
 		4A0000002A000001 /* StartupManagerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupManagerApp.swift; sourceTree = "<group>"; };
 		4A0000004A000001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		4A0000006A000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		4A0000008A000001 /* LaunchItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchItem.swift; sourceTree = "<group>"; };
+		4A000000AA000001 /* LoginItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItem.swift; sourceTree = "<group>"; };
+		4A000000CA000001 /* LaunchAgent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAgent.swift; sourceTree = "<group>"; };
+		4A000000EA000001 /* LaunchDaemon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchDaemon.swift; sourceTree = "<group>"; };
+		4A0000010A000002 /* PlistParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlistParser.swift; sourceTree = "<group>"; };
+		4A0000012A000001 /* LaunchItemManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchItemManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +63,12 @@
 			children = (
 				4A0000002A000001 /* StartupManagerApp.swift */,
 				4A0000004A000001 /* ContentView.swift */,
+				4A0000008A000001 /* LaunchItem.swift */,
+				4A000000AA000001 /* LoginItem.swift */,
+				4A000000CA000001 /* LaunchAgent.swift */,
+				4A000000EA000001 /* LaunchDaemon.swift */,
+				4A0000010A000002 /* PlistParser.swift */,
+				4A0000012A000001 /* LaunchItemManager.swift */,
 				4A0000006A000001 /* Assets.xcassets */,
 			);
 			path = StartupManager;
@@ -127,6 +145,12 @@
 			files = (
 				4A0000003A000001 /* ContentView.swift in Sources */,
 				4A0000001A000001 /* StartupManagerApp.swift in Sources */,
+				4A0000007A000001 /* LaunchItem.swift in Sources */,
+				4A0000009A000001 /* LoginItem.swift in Sources */,
+				4A000000BA000001 /* LaunchAgent.swift in Sources */,
+				4A000000DA000001 /* LaunchDaemon.swift in Sources */,
+				4A000000FA000001 /* PlistParser.swift in Sources */,
+				4A0000011A000001 /* LaunchItemManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
