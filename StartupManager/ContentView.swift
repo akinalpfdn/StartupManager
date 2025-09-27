@@ -40,6 +40,23 @@ struct ContentView: View {
                     }
                     .padding()
 
+                    if let errorMessage = manager.errorMessage {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle")
+                                .foregroundColor(.orange)
+                            Text(errorMessage)
+                                .foregroundColor(.orange)
+                            Spacer()
+                            Button("Dismiss") {
+                                manager.errorMessage = nil
+                            }
+                        }
+                        .padding()
+                        .background(Color.orange.opacity(0.1))
+                        .cornerRadius(8)
+                        .padding(.horizontal)
+                    }
+
                     if !selectedCategory.isEmpty {
                         Text(selectedCategory)
                             .font(.title2)
@@ -61,15 +78,35 @@ struct ContentView: View {
                                         }
                                     }
                                     Spacer()
-                                    Text(item.startupImpact)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 2)
-                                        .background(getImpactColor(item.startupImpact))
-                                        .foregroundColor(.white)
-                                        .cornerRadius(4)
-                                        .font(.caption)
+
+                                    HStack {
+                                        Toggle("", isOn: .constant(item.isEnabled))
+                                            .toggleStyle(SwitchToggleStyle())
+                                            .onChange(of: item.isEnabled) { _ in
+                                                manager.toggleItem(item)
+                                            }
+
+                                        Text(item.startupImpact)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 2)
+                                            .background(getImpactColor(item.startupImpact))
+                                            .foregroundColor(.white)
+                                            .cornerRadius(4)
+                                            .font(.caption)
+                                    }
                                 }
                                 .padding(.vertical, 2)
+                                .contextMenu {
+                                    Button("Toggle Enabled") {
+                                        manager.toggleItem(item)
+                                    }
+                                    Button("Remove", role: .destructive) {
+                                        manager.removeItem(item)
+                                    }
+                                    Button("Show in Finder") {
+                                        NSWorkspace.shared.selectFile(item.path, inFileViewerRootedAtPath: "")
+                                    }
+                                }
                             }
                         }
                     } else {

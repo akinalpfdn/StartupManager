@@ -85,4 +85,26 @@ class LaunchItemManager: ObservableObject {
             self.launchDaemons = daemons
         }
     }
+
+    func toggleItem(_ item: any LaunchItem) {
+        Task {
+            // TODO: ServiceManagement ile enable/disable işlemleri
+            await MainActor.run {
+                self.errorMessage = "Toggle functionality will be implemented with ServiceManagement framework"
+            }
+        }
+    }
+
+    func removeItem(_ item: any LaunchItem) {
+        Task {
+            // TODO: Dosya sisteminden silme işlemleri
+            await MainActor.run {
+                self.errorMessage = "Remove functionality will be implemented with proper file system operations"
+            }
+        }
+    }
+
+    func refreshItems() {
+        loadAllItems()
+    }
 }
