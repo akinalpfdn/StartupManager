@@ -17,6 +17,7 @@ struct DetailPanelView: View {
     let onExport: () -> Void
     let onImport: () -> Void
     let onAddLoginItem: (URL) -> Void
+    let onChangePriority: (any LaunchItem, String) -> Void
 
     @State private var isTargeted = false
 
@@ -144,9 +145,11 @@ struct DetailPanelView: View {
 
                     List(selection: $selectedItems) {
                         ForEach(items, id: \.path) { item in
-                            LaunchItemRow(item: item) {
+                            LaunchItemRow(item: item, onToggle: {
                                 onToggleItem(item)
-                            }
+                            }, onChangePriority: !(item is LoginItem) ? { priority in
+                                onChangePriority(item, priority)
+                            } : nil)
                             .tag(item.path)
                             .contextMenu {
                                 Button {

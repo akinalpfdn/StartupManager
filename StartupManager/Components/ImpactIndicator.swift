@@ -2,19 +2,19 @@ import SwiftUI
 
 struct ImpactIndicator: View {
     let impact: String
-    let onTap: (() -> Void)?
+    let onChangePriority: ((String) -> Void)?
 
-    init(impact: String, onTap: (() -> Void)? = nil) {
+    init(impact: String, onChangePriority: ((String) -> Void)? = nil) {
         self.impact = impact
-        self.onTap = onTap
+        self.onChangePriority = onChangePriority
     }
 
     var body: some View {
-        if let onTap = onTap {
+        if let onChangePriority = onChangePriority {
             Menu {
-                Button("Low") { onTap() }
-                Button("Medium") { onTap() }
-                Button("High") { onTap() }
+                Button("Low") { onChangePriority("Low") }
+                Button("Medium") { onChangePriority("Medium") }
+                Button("High") { onChangePriority("High") }
             } label: {
                 HStack(spacing: 4) {
                     Text(impact)

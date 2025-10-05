@@ -59,6 +59,9 @@ struct ContentView: View {
                     onAddLoginItem: { url in
                         LoginItemsReader.shared.addLoginItem(appURL: url)
                         manager.loadAllItems()
+                    },
+                    onChangePriority: { item, priority in
+                        manager.changePriority(item: item, priority: priority)
                     }
                 )
             }

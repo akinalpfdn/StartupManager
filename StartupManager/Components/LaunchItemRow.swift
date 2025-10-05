@@ -3,6 +3,7 @@ import SwiftUI
 struct LaunchItemRow: View {
     let item: any LaunchItem
     let onToggle: () -> Void
+    let onChangePriority: ((String) -> Void)?
 
     @State private var isToggling = false
 
@@ -64,9 +65,7 @@ struct LaunchItemRow: View {
 
                 // Show impact indicator for Launch Agents/Daemons only (not Login Items)
                 if !(item is LoginItem) {
-                    ImpactIndicator(impact: item.startupImpact) {
-                        // TODO: Priority değiştirme (Launch Agent/Daemon için)
-                    }
+                    ImpactIndicator(impact: item.startupImpact, onChangePriority: onChangePriority)
                 }
             }
         }
