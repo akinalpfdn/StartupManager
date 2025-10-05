@@ -88,9 +88,35 @@ class LaunchItemManager: ObservableObject {
 
     func toggleItem(_ item: any LaunchItem) {
         Task {
-            // TODO: ServiceManagement ile enable/disable işlemleri
-            await MainActor.run {
-                self.errorMessage = "Toggle functionality will be implemented with ServiceManagement framework"
+            do {
+                // LaunchAgent veya LaunchDaemon için launchctl ile enable/disable
+                let process = Process()
+                process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+
+                if item.isEnabled {
+                    // Disable: unload
+                    process.arguments = ["unload", item.path]
+                } else {
+                    // Enable: load
+                    process.arguments = ["load", item.path]
+                }
+
+                try process.run()
+                process.waitUntilExit()
+
+                if process.terminationStatus == 0 {
+                    await MainActor.run {
+                        self.errorMessage = nil
+                        // Reload data to reflect changes
+                        self.loadAllItems()
+                    }
+                } else {
+                    throw NSError(domain: "LaunchItemManager", code: Int(process.terminationStatus))
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorMessage = "Failed to toggle item: \(error.localizedDescription). You may need admin privileges."
+                }
             }
         }
     }
@@ -105,9 +131,28 @@ class LaunchItemManager: ObservableObject {
                 return
             }
 
-            // TODO: Dosya sisteminden silme işlemleri
-            await MainActor.run {
-                self.errorMessage = "Remove functionality will be implemented with proper file system operations"
+            do {
+                // Önce unload et
+                if item.isEnabled {
+                    let unloadProcess = Process()
+                    unloadProcess.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+                    unloadProcess.arguments = ["unload", item.path]
+                    try? unloadProcess.run()
+                    unloadProcess.waitUntilExit()
+                }
+
+                // Sonra dosyayı sil
+                try FileManager.default.removeItem(atPath: item.path)
+
+                await MainActor.run {
+                    self.errorMessage = nil
+                    // Reload data to reflect changes
+                    self.loadAllItems()
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorMessage = "Failed to remove item: \(error.localizedDescription). You may need admin privileges."
+                }
             }
         }
     }

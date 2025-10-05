@@ -3,6 +3,7 @@ import SwiftUI
 struct LaunchItemRow: View {
     let item: any LaunchItem
     let onToggle: () -> Void
+    @State private var isToggling = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -29,13 +30,25 @@ struct LaunchItemRow: View {
             Spacer()
 
             HStack(spacing: 12) {
-                Toggle("", isOn: .constant(item.isEnabled))
-                    .toggleStyle(SwitchToggleStyle())
-                    .onChange(of: item.isEnabled) { _ in
-                        onToggle()
+                Toggle("", isOn: Binding(
+                    get: { item.isEnabled },
+                    set: { newValue in
+                        if !isToggling {
+                            isToggling = true
+                            onToggle()
+                            // Reset after animation
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                isToggling = false
+                            }
+                        }
                     }
+                ))
+                .toggleStyle(SwitchToggleStyle())
+                .disabled(isToggling)
 
-                ImpactIndicator(impact: item.startupImpact)
+                ImpactIndicator(impact: item.startupImpact) {
+                    // Priority değiştir (şimdilik sadece UI)
+                }
             }
         }
         .padding(.vertical, 8)

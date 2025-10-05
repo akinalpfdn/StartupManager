@@ -9,6 +9,8 @@ struct ContentView: View {
     @State private var showingBatchRemoveConfirmation = false
     @State private var showingSingleRemoveConfirmation = false
     @State private var itemToRemovePath: String?
+    @State private var showingExportDialog = false
+    @State private var showingImportDialog = false
 
     var body: some View {
         ZStack {
@@ -45,7 +47,10 @@ struct ContentView: View {
                     },
                     onDismissError: { manager.errorMessage = nil },
                     onBatchDisable: { batchDisableItems() },
-                    onBatchRemove: { showingBatchRemoveConfirmation = true }
+                    onBatchRemove: { showingBatchRemoveConfirmation = true },
+                    onBackup: { createBackup() },
+                    onExport: { exportConfiguration() },
+                    onImport: { importConfiguration() }
                 )
             }
             .onAppear {
@@ -113,6 +118,59 @@ struct ContentView: View {
             }
         }
         selectedItems.removeAll()
+    }
+
+    private func createBackup() {
+        do {
+            let backupURL = try BackupManager.shared.createBackup(
+                loginItems: manager.loginItems,
+                launchAgents: manager.launchAgents,
+                launchDaemons: manager.launchDaemons
+            )
+            manager.errorMessage = nil
+            // Show success message
+            print("Backup created at: \(backupURL.path)")
+        } catch {
+            manager.errorMessage = "Failed to create backup: \(error.localizedDescription)"
+        }
+    }
+
+    private func exportConfiguration() {
+        let savePanel = NSSavePanel()
+        savePanel.allowedContentTypes = [.json]
+        savePanel.nameFieldStringValue = "startup_config_\(Date().timeIntervalSince1970).json"
+        savePanel.begin { response in
+            if response == .OK, let url = savePanel.url {
+                do {
+                    try BackupManager.shared.exportConfiguration(
+                        loginItems: manager.loginItems,
+                        launchAgents: manager.launchAgents,
+                        launchDaemons: manager.launchDaemons,
+                        to: url
+                    )
+                    manager.errorMessage = nil
+                } catch {
+                    manager.errorMessage = "Failed to export: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
+    private func importConfiguration() {
+        let openPanel = NSOpenPanel()
+        openPanel.allowedContentTypes = [.json]
+        openPanel.allowsMultipleSelection = false
+        openPanel.begin { response in
+            if response == .OK, let url = openPanel.url {
+                do {
+                    let config = try BackupManager.shared.loadConfiguration(from: url)
+                    // TODO: Apply configuration
+                    manager.errorMessage = "Import successful! Loaded \(config.launchAgents.count) agents and \(config.launchDaemons.count) daemons."
+                } catch {
+                    manager.errorMessage = "Failed to import: \(error.localizedDescription)"
+                }
+            }
+        }
     }
 
     private func batchRemoveItems() {

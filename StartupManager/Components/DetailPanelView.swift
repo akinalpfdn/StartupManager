@@ -13,6 +13,9 @@ struct DetailPanelView: View {
     let onDismissError: () -> Void
     let onBatchDisable: () -> Void
     let onBatchRemove: () -> Void
+    let onBackup: () -> Void
+    let onExport: () -> Void
+    let onImport: () -> Void
 
     var body: some View {
         if isLoading {
@@ -30,6 +33,28 @@ struct DetailPanelView: View {
                         .font(.largeTitle)
                         .fontWeight(.semibold)
                     Spacer()
+
+                    Menu {
+                        Button {
+                            onBackup()
+                        } label: {
+                            Label("Create Backup", systemImage: "archivebox")
+                        }
+                        Button {
+                            onExport()
+                        } label: {
+                            Label("Export...", systemImage: "square.and.arrow.up")
+                        }
+                        Button {
+                            onImport()
+                        } label: {
+                            Label("Import...", systemImage: "square.and.arrow.down")
+                        }
+                    } label: {
+                        Label("Backup", systemImage: "ellipsis.circle")
+                    }
+                    .menuStyle(.borderlessButton)
+
                     Button {
                         onRefresh()
                     } label: {
