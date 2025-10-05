@@ -5,10 +5,14 @@ struct DetailPanelView: View {
     let items: [any LaunchItem]
     let isLoading: Bool
     let errorMessage: String?
+    @Binding var searchText: String
+    @Binding var selectedItems: Set<String>
     let onRefresh: () -> Void
     let onToggleItem: (any LaunchItem) -> Void
     let onRemoveItem: (any LaunchItem) -> Void
     let onDismissError: () -> Void
+    let onBatchDisable: () -> Void
+    let onBatchRemove: () -> Void
 
     var body: some View {
         if isLoading {
@@ -57,13 +61,47 @@ struct DetailPanelView: View {
 
                 // Content
                 if !category.isEmpty {
+                    // Search Bar & Batch Actions
+                    HStack {
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.secondary)
+                            TextField("Search items...", text: $searchText)
+                                .textFieldStyle(.plain)
+                        }
+                        .padding(8)
+                        .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
+
+                        if !selectedItems.isEmpty {
+                            Text("\(selectedItems.count) selected")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+
+                            Button {
+                                onBatchDisable()
+                            } label: {
+                                Label("Disable", systemImage: "power")
+                            }
+                            .buttonStyle(.borderless)
+
+                            Button(role: .destructive) {
+                                onBatchRemove()
+                            } label: {
+                                Label("Remove", systemImage: "trash")
+                            }
+                            .buttonStyle(.borderless)
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 8)
+
                     Text(category)
                         .font(.title2)
                         .fontWeight(.semibold)
                         .padding(.horizontal)
                         .padding(.top, 8)
 
-                    List {
+                    List(selection: $selectedItems) {
                         ForEach(items, id: \.path) { item in
                             LaunchItemRow(item: item) {
                                 onToggleItem(item)

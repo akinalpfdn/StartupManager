@@ -41,5 +41,6 @@ struct LaunchItemRow: View {
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+        .tag(item.path)
     }
 }

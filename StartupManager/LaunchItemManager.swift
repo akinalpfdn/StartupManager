@@ -97,6 +97,14 @@ class LaunchItemManager: ObservableObject {
 
     func removeItem(_ item: any LaunchItem) {
         Task {
+            // Güvenlik kontrolü: System dosyalarını koruma
+            if item.path.hasPrefix("/System/") || item.path.hasPrefix("/Library/LaunchDaemons") {
+                await MainActor.run {
+                    self.errorMessage = "Cannot remove system files. This item is protected."
+                }
+                return
+            }
+
             // TODO: Dosya sisteminden silme işlemleri
             await MainActor.run {
                 self.errorMessage = "Remove functionality will be implemented with proper file system operations"
