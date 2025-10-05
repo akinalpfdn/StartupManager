@@ -55,7 +55,11 @@ struct ContentView: View {
                     onBatchRemove: { showingBatchRemoveConfirmation = true },
                     onBackup: { createBackup() },
                     onExport: { exportConfiguration() },
-                    onImport: { importConfiguration() }
+                    onImport: { importConfiguration() },
+                    onAddLoginItem: { url in
+                        LoginItemsReader.shared.addLoginItem(appURL: url)
+                        manager.loadAllItems()
+                    }
                 )
             }
             .onAppear {

@@ -257,4 +257,41 @@ class LoginItemsReader {
             }
         }
     }
+
+    // Add new app to login items
+    func addLoginItem(appURL: URL) {
+        print("Adding login item: \(appURL.path)")
+
+        let appName = appURL.deletingPathExtension().lastPathComponent
+
+        // Add to system via AppleScript
+        let addScript = """
+        tell application "System Events"
+            make login item at end with properties {path:"\(appURL.path)", hidden:false}
+        end tell
+        """
+
+        if let appleScript = NSAppleScript(source: addScript) {
+            var error: NSDictionary?
+            appleScript.executeAndReturnError(&error)
+
+            if let error = error {
+                print("Error adding login item: \(error)")
+            } else {
+                print("Successfully added to system: \(appName)")
+                // Add to local database
+                var savedItems = loadSavedLoginItems()
+                let newItem = SavedLoginItem(
+                    name: appName,
+                    path: appURL.path,
+                    isEnabled: true,
+                    publisher: nil
+                )
+                savedItems.append(newItem)
+                if let encoded = try? JSONEncoder().encode(savedItems) {
+                    userDefaults.set(encoded, forKey: loginItemsKey)
+                }
+            }
+        }
+    }
 }

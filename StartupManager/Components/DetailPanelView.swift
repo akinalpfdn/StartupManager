@@ -16,6 +16,9 @@ struct DetailPanelView: View {
     let onBackup: () -> Void
     let onExport: () -> Void
     let onImport: () -> Void
+    let onAddLoginItem: (URL) -> Void
+
+    @State private var isTargeted = false
 
     var body: some View {
         if isLoading {
@@ -123,11 +126,21 @@ struct DetailPanelView: View {
                     .padding(.horizontal)
                     .padding(.bottom, 8)
 
-                    Text(category)
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .padding(.horizontal)
-                        .padding(.top, 8)
+                    HStack {
+                        Text(category)
+                            .font(.title2)
+                            .fontWeight(.semibold)
+
+                        if category == "Login Items" {
+                            Spacer()
+                            Text("Drag & drop apps here to add")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.trailing, 4)
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 8)
 
                     List(selection: $selectedItems) {
                         ForEach(items, id: \.path) { item in
@@ -156,6 +169,28 @@ struct DetailPanelView: View {
                     }
                     .id(searchText + category)
                     .scrollContentBackground(.hidden)
+                    .onDrop(of: [.fileURL], isTargeted: $isTargeted) { providers in
+                        // Only allow drops for Login Items category
+                        guard category == "Login Items" else { return false }
+
+                        for provider in providers {
+                            _ = provider.loadObject(ofClass: URL.self) { url, error in
+                                if let url = url, url.pathExtension == "app" {
+                                    DispatchQueue.main.async {
+                                        onAddLoginItem(url)
+                                    }
+                                }
+                            }
+                        }
+                        return true
+                    }
+                    .overlay {
+                        if isTargeted && category == "Login Items" {
+                            RoundedRectangle(cornerRadius: 12)
+                                .strokeBorder(Color.accentColor, lineWidth: 3, antialiased: true)
+                                .background(Color.accentColor.opacity(0.1))
+                        }
+                    }
                 } else {
                     Text("Select a category to view startup items")
                         .foregroundColor(.secondary)
