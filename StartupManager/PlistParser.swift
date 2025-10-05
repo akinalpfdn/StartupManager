@@ -44,10 +44,13 @@ class PlistParser {
         let label = plist["Label"] as? String ?? url.lastPathComponent
         let name = label.components(separatedBy: ".").last ?? label
 
+        // Check if agent is loaded using launchctl
+        let isEnabled = isServiceLoaded(label: label)
+
         return LaunchAgent(
             name: name,
             path: url.path,
-            isEnabled: true,
+            isEnabled: isEnabled,
             publisher: plist["Program"] as? String,
             startupImpact: "Medium",
             label: label
@@ -64,14 +67,38 @@ class PlistParser {
         let name = label.components(separatedBy: ".").last ?? label
         let keepAlive = plist["KeepAlive"] as? Bool ?? false
 
+        // Check if daemon is loaded using launchctl
+        let isEnabled = isServiceLoaded(label: label)
+
         return LaunchDaemon(
             name: name,
             path: url.path,
-            isEnabled: true,
+            isEnabled: isEnabled,
             publisher: plist["Program"] as? String,
             startupImpact: "High",
             label: label,
             keepAlive: keepAlive
         )
+    }
+
+    // Helper function to check if a service is loaded
+    private static func isServiceLoaded(label: String) -> Bool {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+        process.arguments = ["list", label]
+
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = pipe
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+
+            // If exit code is 0, service is loaded
+            return process.terminationStatus == 0
+        } catch {
+            return false
+        }
     }
 }

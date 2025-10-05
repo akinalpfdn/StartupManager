@@ -2,7 +2,6 @@ import Foundation
 
 struct PerformanceMetrics {
     let estimatedStartupTime: TimeInterval // seconds
-    let memoryImpact: Int // MB
     let cpuImpact: String // Low, Medium, High
     let overallImpact: String // Low, Medium, High
 }
@@ -12,22 +11,18 @@ class PerformanceAnalyzer {
 
     func analyzeItem(_ item: any LaunchItem) -> PerformanceMetrics {
         var startupTime: TimeInterval = 0.0
-        var memoryImpact = 0
         var cpuImpactScore = 0
 
         // Analyze based on item type
         if let agent = item as? LaunchAgent {
             startupTime += analyzeAgent(agent)
             cpuImpactScore += getAgentCPUImpact(agent)
-            memoryImpact = estimateMemoryUsage(agent)
         } else if let daemon = item as? LaunchDaemon {
             startupTime += analyzeDaemon(daemon)
             cpuImpactScore += getDaemonCPUImpact(daemon)
-            memoryImpact = estimateMemoryUsage(daemon)
         } else if item is LoginItem {
             startupTime += 0.2 // Login items typically add 200ms
             cpuImpactScore = 1
-            memoryImpact = 50
         }
 
         // Determine CPU impact level
@@ -43,13 +38,11 @@ class PerformanceAnalyzer {
         // Calculate overall impact
         let overallImpact = calculateOverallImpact(
             startupTime: startupTime,
-            cpuScore: cpuImpactScore,
-            memory: memoryImpact
+            cpuScore: cpuImpactScore
         )
 
         return PerformanceMetrics(
             estimatedStartupTime: startupTime,
-            memoryImpact: memoryImpact,
             cpuImpact: cpuImpact,
             overallImpact: overallImpact
         )
@@ -149,32 +142,8 @@ class PerformanceAnalyzer {
         return score
     }
 
-    private func estimateMemoryUsage(_ item: any LaunchItem) -> Int {
-        // Base memory estimate
-        var memory = 30 // MB
-
-        if let agent = item as? LaunchAgent {
-            guard let plistContent = PlistParser.parsePlist(at: agent.path) else {
-                return memory
-            }
-            if let keepAlive = plistContent["KeepAlive"] as? Bool, keepAlive {
-                memory += 20
-            }
-        } else if let daemon = item as? LaunchDaemon {
-            memory = 50 // Daemons use more memory
-            guard let plistContent = PlistParser.parsePlist(at: daemon.path) else {
-                return memory
-            }
-            if let keepAlive = plistContent["KeepAlive"] as? Bool, keepAlive {
-                memory += 30
-            }
-        }
-
-        return memory
-    }
-
-    private func calculateOverallImpact(startupTime: TimeInterval, cpuScore: Int, memory: Int) -> String {
-        let score = (startupTime * 10) + Double(cpuScore) + (Double(memory) / 30)
+    private func calculateOverallImpact(startupTime: TimeInterval, cpuScore: Int) -> String {
+        let score = (startupTime * 10) + Double(cpuScore)
 
         if score >= 15 {
             return "High"

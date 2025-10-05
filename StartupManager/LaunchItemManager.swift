@@ -90,7 +90,16 @@ class LaunchItemManager: ObservableObject {
                     LoginItemsReader.shared.toggleLoginItem(item as! LoginItem)
                     await MainActor.run {
                         self.errorMessage = nil
-                        self.loadAllItems()
+                        // Update local state only
+                        if let index = self.loginItems.firstIndex(where: { $0.path == item.path }) {
+                            self.loginItems[index] = LoginItem(
+                                name: self.loginItems[index].name,
+                                path: self.loginItems[index].path,
+                                isEnabled: !self.loginItems[index].isEnabled,
+                                publisher: self.loginItems[index].publisher,
+                                startupImpact: self.loginItems[index].startupImpact
+                            )
+                        }
                     }
                     return
                 }
@@ -113,8 +122,29 @@ class LaunchItemManager: ObservableObject {
                 if process.terminationStatus == 0 {
                     await MainActor.run {
                         self.errorMessage = nil
-                        // Reload data to reflect changes
-                        self.loadAllItems()
+                        // Update local state only
+                        if let agent = item as? LaunchAgent,
+                           let index = self.launchAgents.firstIndex(where: { $0.path == item.path }) {
+                            self.launchAgents[index] = LaunchAgent(
+                                name: agent.name,
+                                path: agent.path,
+                                isEnabled: !agent.isEnabled,
+                                publisher: agent.publisher,
+                                startupImpact: agent.startupImpact,
+                                label: agent.label
+                            )
+                        } else if let daemon = item as? LaunchDaemon,
+                                  let index = self.launchDaemons.firstIndex(where: { $0.path == item.path }) {
+                            self.launchDaemons[index] = LaunchDaemon(
+                                name: daemon.name,
+                                path: daemon.path,
+                                isEnabled: !daemon.isEnabled,
+                                publisher: daemon.publisher,
+                                startupImpact: daemon.startupImpact,
+                                label: daemon.label,
+                                keepAlive: daemon.keepAlive
+                            )
+                        }
                     }
                 } else {
                     throw NSError(domain: "LaunchItemManager", code: Int(process.terminationStatus))

@@ -33,8 +33,6 @@ class LoginItemsReader {
 
     // Read login items using AppleScript (most reliable method)
     func readLoginItems() -> [LoginItem] {
-        print("Reading login items...")
-
         // Load saved items from local database
         let savedItems = loadSavedLoginItems()
         var savedDict = Dictionary(uniqueKeysWithValues: savedItems.map { ($0.name, $0) })
@@ -42,12 +40,9 @@ class LoginItemsReader {
         // Read current items from system
         var systemItems: [LoginItem] = []
         systemItems.append(contentsOf: readFromSystemPreferences())
-        print("AppleScript returned \(systemItems.count) items")
 
         if systemItems.isEmpty {
-            print("Trying legacy method...")
             systemItems.append(contentsOf: readLegacyLoginItems())
-            print("Legacy method returned \(systemItems.count) items")
         }
 
         // Merge: Update saved items with system data (new items)
@@ -92,18 +87,12 @@ class LoginItemsReader {
             .appendingPathComponent("com.apple.backgroundtaskmanagementagent")
             .appendingPathComponent("backgrounditems.btm")
 
-        print("Checking for plist at: \(loginItemsPlist.path)")
-
         if FileManager.default.fileExists(atPath: loginItemsPlist.path) {
-            print("Plist file exists")
             if let data = try? Data(contentsOf: loginItemsPlist),
                let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] {
 
-                print("Plist parsed, keys: \(plist.keys)")
-
                 // Parse background items
                 if let itemsDict = plist["$objects"] as? [[String: Any]] {
-                    print("Found \(itemsDict.count) objects")
                     for dict in itemsDict {
                         if let name = dict["Name"] as? String,
                            let url = dict["URL"] as? String {
@@ -118,8 +107,6 @@ class LoginItemsReader {
                     }
                 }
             }
-        } else {
-            print("Plist file does not exist")
         }
 
         return items
@@ -141,15 +128,10 @@ class LoginItemsReader {
             let result = appleScript.executeAndReturnError(&error)
 
             if let error = error {
-                print("AppleScript error: \(error)")
-                print("Error description: \(error[NSAppleScript.errorMessage] ?? "Unknown")")
                 return items
             }
 
-            print("AppleScript result type: \(result.descriptorType)")
-
             if let descriptor = result.coerce(toDescriptorType: typeAEList) {
-                print("Successfully coerced to list, items: \(descriptor.numberOfItems)")
                 for i in 1...descriptor.numberOfItems {
                     if let item = descriptor.atIndex(i)?.stringValue {
                         // Get more details for each item
@@ -185,8 +167,6 @@ class LoginItemsReader {
                         ))
                     }
                 }
-            } else {
-                print("Could not coerce to typeAEList")
             }
         }
 
@@ -195,8 +175,6 @@ class LoginItemsReader {
 
     // Toggle login item on/off
     func toggleLoginItem(_ item: LoginItem) {
-        print("Toggling login item: \(item.name), current isEnabled: \(item.isEnabled)")
-
         if item.isEnabled {
             // Disable: DELETE from login items (won't launch at startup)
             let disableScript = """
@@ -212,10 +190,7 @@ class LoginItemsReader {
                 var error: NSDictionary?
                 appleScript.executeAndReturnError(&error)
 
-                if let error = error {
-                    print("Error disabling login item: \(error)")
-                } else {
-                    print("Successfully disabled (removed from system): \(item.name)")
+                if error == nil {
                     // Update local database: keep item but mark as disabled
                     updateLocalItemState(name: item.name, isEnabled: false)
                 }
@@ -232,10 +207,7 @@ class LoginItemsReader {
                 var error: NSDictionary?
                 appleScript.executeAndReturnError(&error)
 
-                if let error = error {
-                    print("Error enabling login item: \(error)")
-                } else {
-                    print("Successfully enabled (added to system): \(item.name)")
+                if error == nil {
                     // Update local database: mark as enabled
                     updateLocalItemState(name: item.name, isEnabled: true)
                 }
@@ -260,8 +232,6 @@ class LoginItemsReader {
 
     // Add new app to login items
     func addLoginItem(appURL: URL) {
-        print("Adding login item: \(appURL.path)")
-
         let appName = appURL.deletingPathExtension().lastPathComponent
 
         // Add to system via AppleScript
@@ -275,10 +245,7 @@ class LoginItemsReader {
             var error: NSDictionary?
             appleScript.executeAndReturnError(&error)
 
-            if let error = error {
-                print("Error adding login item: \(error)")
-            } else {
-                print("Successfully added to system: \(appName)")
+            if error == nil {
                 // Add to local database
                 var savedItems = loadSavedLoginItems()
                 let newItem = SavedLoginItem(
@@ -297,8 +264,6 @@ class LoginItemsReader {
 
     // Change priority (move up/down in launch order)
     func changePriority(item: LoginItem, direction: PriorityDirection) {
-        print("Changing priority for \(item.name) - direction: \(direction)")
-
         // Delete from current position
         let deleteScript = """
         tell application "System Events"
@@ -323,11 +288,6 @@ class LoginItemsReader {
 
             if error == nil {
                 addAppleScript.executeAndReturnError(&error)
-                if let error = error {
-                    print("Error changing priority: \(error)")
-                } else {
-                    print("Successfully changed priority for: \(item.name)")
-                }
             }
         }
     }

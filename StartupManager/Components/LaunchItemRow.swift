@@ -40,14 +40,6 @@ struct LaunchItemRow: View {
                             .font(.caption)
                     }
                     .foregroundColor(.orange)
-
-                    HStack(spacing: 4) {
-                        Image(systemName: "memorychip")
-                            .font(.caption2)
-                        Text("\(performanceMetrics.memoryImpact)MB")
-                            .font(.caption)
-                    }
-                    .foregroundColor(.purple)
                 }
             }
 
