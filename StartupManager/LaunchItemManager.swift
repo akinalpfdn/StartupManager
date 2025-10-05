@@ -38,7 +38,7 @@ class LaunchItemManager: ObservableObject {
         let items = LoginItemsReader.shared.readLoginItems()
 
         DispatchQueue.main.async {
-            self.loginItems = items
+            self.loginItems = items.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         }
     }
 
@@ -58,7 +58,7 @@ class LaunchItemManager: ObservableObject {
         }
 
         DispatchQueue.main.async {
-            self.launchAgents = agents
+            self.launchAgents = agents.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         }
     }
 
@@ -78,7 +78,7 @@ class LaunchItemManager: ObservableObject {
         }
 
         DispatchQueue.main.async {
-            self.launchDaemons = daemons
+            self.launchDaemons = daemons.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         }
     }
 
