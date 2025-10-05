@@ -5,6 +5,10 @@ struct LaunchItemRow: View {
     let onToggle: () -> Void
     @State private var isToggling = false
 
+    private var performanceMetrics: PerformanceMetrics {
+        PerformanceAnalyzer.shared.analyzeItem(item)
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
@@ -16,14 +20,33 @@ struct LaunchItemRow: View {
                     .foregroundColor(.secondary)
                     .lineLimit(1)
 
-                if let publisher = item.publisher {
+                HStack(spacing: 8) {
+                    if let publisher = item.publisher {
+                        HStack(spacing: 4) {
+                            Image(systemName: "building.2")
+                                .font(.caption2)
+                            Text(publisher)
+                                .font(.caption)
+                        }
+                        .foregroundColor(.blue)
+                    }
+
+                    // Performance metrics
                     HStack(spacing: 4) {
-                        Image(systemName: "building.2")
+                        Image(systemName: "clock")
                             .font(.caption2)
-                        Text(publisher)
+                        Text(String(format: "%.1fs", performanceMetrics.estimatedStartupTime))
                             .font(.caption)
                     }
-                    .foregroundColor(.blue)
+                    .foregroundColor(.orange)
+
+                    HStack(spacing: 4) {
+                        Image(systemName: "memorychip")
+                            .font(.caption2)
+                        Text("\(performanceMetrics.memoryImpact)MB")
+                            .font(.caption)
+                    }
+                    .foregroundColor(.purple)
                 }
             }
 

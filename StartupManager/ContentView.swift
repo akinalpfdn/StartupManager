@@ -11,6 +11,8 @@ struct ContentView: View {
     @State private var itemToRemovePath: String?
     @State private var showingExportDialog = false
     @State private var showingImportDialog = false
+    @State private var showingBackupSuccess = false
+    @State private var backupSuccessMessage = ""
 
     var body: some View {
         ZStack {
@@ -24,7 +26,10 @@ struct ContentView: View {
                     selectedCategory: $selectedCategory,
                     loginItemsCount: manager.loginItems.count,
                     launchAgentsCount: manager.launchAgents.count,
-                    launchDaemonsCount: manager.launchDaemons.count
+                    launchDaemonsCount: manager.launchDaemons.count,
+                    loginItems: manager.loginItems,
+                    launchAgents: manager.launchAgents,
+                    launchDaemons: manager.launchDaemons
                 )
                 .onChange(of: selectedCategory) { _ in
                     selectedItems.removeAll()
@@ -83,6 +88,11 @@ struct ContentView: View {
             } message: {
                 Text("Are you sure you want to remove \(selectedItems.count) selected items? This action cannot be undone.")
             }
+            .alert("Backup Created", isPresented: $showingBackupSuccess) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(backupSuccessMessage)
+            }
         }
     }
 
@@ -128,8 +138,8 @@ struct ContentView: View {
                 launchDaemons: manager.launchDaemons
             )
             manager.errorMessage = nil
-            // Show success message
-            print("Backup created at: \(backupURL.path)")
+            backupSuccessMessage = "Backup saved to:\n\(backupURL.path)"
+            showingBackupSuccess = true
         } catch {
             manager.errorMessage = "Failed to create backup: \(error.localizedDescription)"
         }

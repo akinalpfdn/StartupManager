@@ -1,6 +1,15 @@
 import Foundation
 
 class PlistParser {
+    static func parsePlist(at path: String) -> [String: Any]? {
+        let url = URL(fileURLWithPath: path)
+        guard let data = try? Data(contentsOf: url),
+              let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else {
+            return nil
+        }
+        return plist
+    }
+
     static func parseLaunchAgent(from url: URL) -> LaunchAgent? {
         guard let data = try? Data(contentsOf: url),
               let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else {
