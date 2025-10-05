@@ -23,6 +23,7 @@
 		4A0000021A000001 /* DetailPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000022A000001 /* DetailPanelView.swift */; };
 		4A0000024A000001 /* BackupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000025A000001 /* BackupManager.swift */; };
 		4A0000026A000001 /* PerformanceAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000027A000001 /* PerformanceAnalyzer.swift */; };
+		4A0000029A000001 /* PrivilegeHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000030A000001 /* PrivilegeHelper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +44,8 @@
 		4A0000022A000001 /* DetailPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailPanelView.swift; sourceTree = "<group>"; };
 		4A0000025A000001 /* BackupManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupManager.swift; sourceTree = "<group>"; };
 		4A0000027A000001 /* PerformanceAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceAnalyzer.swift; sourceTree = "<group>"; };
+		4A0000028A000001 /* StartupManager.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = StartupManager.entitlements; sourceTree = "<group>"; };
+		4A0000030A000001 /* PrivilegeHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivilegeHelper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,7 +81,9 @@
 				4A0000012A000001 /* LaunchItemManager.swift */,
 				4A0000025A000001 /* BackupManager.swift */,
 				4A0000027A000001 /* PerformanceAnalyzer.swift */,
+				4A0000030A000001 /* PrivilegeHelper.swift */,
 				4A0000014A000001 /* TransparentWindowView.swift */,
+				4A0000028A000001 /* StartupManager.entitlements */,
 				4A0000006A000001 /* Assets.xcassets */,
 			);
 			path = StartupManager;
@@ -187,6 +192,7 @@
 				4A0000021A000001 /* DetailPanelView.swift in Sources */,
 				4A0000024A000001 /* BackupManager.swift in Sources */,
 				4A0000026A000001 /* PerformanceAnalyzer.swift in Sources */,
+				4A0000029A000001 /* PrivilegeHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -312,6 +318,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = StartupManager/StartupManager.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -338,6 +345,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = StartupManager/StartupManager.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
