@@ -1,19 +1,9 @@
 import Foundation
 
 class PlistParser {
-    // Validate plist for security
+    // Validate plist for security - only check for malicious patterns
     static func validatePlist(_ plist: [String: Any]) -> Bool {
-        // Check for required Label key
-        guard let label = plist["Label"] as? String, !label.isEmpty else {
-            return false
-        }
-
-        // Validate Program or ProgramArguments exists
-        if plist["Program"] == nil && plist["ProgramArguments"] == nil {
-            return false
-        }
-
-        // Check for suspicious executable paths
+        // Check for suspicious executable paths (but don't require Program/ProgramArguments)
         if let program = plist["Program"] as? String {
             if program.contains("..") || program.hasPrefix("/tmp/") || program.hasPrefix("/var/tmp/") {
                 return false
