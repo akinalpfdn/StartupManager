@@ -3,6 +3,7 @@ import SwiftUI
 struct LaunchItemRow: View {
     let item: any LaunchItem
     let onToggle: () -> Void
+
     @State private var isToggling = false
 
     private var performanceMetrics: PerformanceMetrics {
@@ -69,8 +70,11 @@ struct LaunchItemRow: View {
                 .toggleStyle(SwitchToggleStyle())
                 .disabled(isToggling)
 
-                ImpactIndicator(impact: item.startupImpact) {
-                    // Priority değiştir (şimdilik sadece UI)
+                // Show impact indicator for Launch Agents/Daemons only (not Login Items)
+                if !(item is LoginItem) {
+                    ImpactIndicator(impact: item.startupImpact) {
+                        // TODO: Priority değiştirme (Launch Agent/Daemon için)
+                    }
                 }
             }
         }

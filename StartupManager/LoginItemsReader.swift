@@ -294,4 +294,46 @@ class LoginItemsReader {
             }
         }
     }
+
+    // Change priority (move up/down in launch order)
+    func changePriority(item: LoginItem, direction: PriorityDirection) {
+        print("Changing priority for \(item.name) - direction: \(direction)")
+
+        // Delete from current position
+        let deleteScript = """
+        tell application "System Events"
+            delete login item "\(item.name)"
+        end tell
+        """
+
+        // Re-add at different position
+        let position = direction == .high ? "beginning" : "end"
+        let addScript = """
+        tell application "System Events"
+            make login item at \(position) with properties {path:"\(item.path)", hidden:false}
+        end tell
+        """
+
+        // Execute delete then add
+        if let deleteAppleScript = NSAppleScript(source: deleteScript),
+           let addAppleScript = NSAppleScript(source: addScript) {
+
+            var error: NSDictionary?
+            deleteAppleScript.executeAndReturnError(&error)
+
+            if error == nil {
+                addAppleScript.executeAndReturnError(&error)
+                if let error = error {
+                    print("Error changing priority: \(error)")
+                } else {
+                    print("Successfully changed priority for: \(item.name)")
+                }
+            }
+        }
+    }
+
+    enum PriorityDirection {
+        case high  // Move to beginning (higher priority)
+        case low   // Move to end (lower priority)
+    }
 }
