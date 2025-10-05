@@ -24,6 +24,7 @@
 		4A0000024A000001 /* BackupManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000025A000001 /* BackupManager.swift */; };
 		4A0000026A000001 /* PerformanceAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000027A000001 /* PerformanceAnalyzer.swift */; };
 		4A0000029A000001 /* PrivilegeHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000030A000001 /* PrivilegeHelper.swift */; };
+		4A0000031A000001 /* LoginItemsReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000032A000001 /* LoginItemsReader.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,6 +47,7 @@
 		4A0000027A000001 /* PerformanceAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceAnalyzer.swift; sourceTree = "<group>"; };
 		4A0000028A000001 /* StartupManager.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = StartupManager.entitlements; sourceTree = "<group>"; };
 		4A0000030A000001 /* PrivilegeHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivilegeHelper.swift; sourceTree = "<group>"; };
+		4A0000032A000001 /* LoginItemsReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemsReader.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,6 +84,7 @@
 				4A0000025A000001 /* BackupManager.swift */,
 				4A0000027A000001 /* PerformanceAnalyzer.swift */,
 				4A0000030A000001 /* PrivilegeHelper.swift */,
+				4A0000032A000001 /* LoginItemsReader.swift */,
 				4A0000014A000001 /* TransparentWindowView.swift */,
 				4A0000028A000001 /* StartupManager.entitlements */,
 				4A0000006A000001 /* Assets.xcassets */,
@@ -193,6 +196,7 @@
 				4A0000024A000001 /* BackupManager.swift in Sources */,
 				4A0000026A000001 /* PerformanceAnalyzer.swift in Sources */,
 				4A0000029A000001 /* PrivilegeHelper.swift in Sources */,
+				4A0000031A000001 /* LoginItemsReader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -326,6 +330,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "StartupManager needs access to manage login items and startup applications.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -353,6 +358,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "StartupManager needs access to manage login items and startup applications.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

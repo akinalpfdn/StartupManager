@@ -35,14 +35,10 @@ class LaunchItemManager: ObservableObject {
     }
 
     private func loadLoginItems() async {
-        // TODO: ServiceManagement ile login items yüklenecek
-        let sampleItems = [
-            LoginItem(name: "Dropbox", path: "/Applications/Dropbox.app", isEnabled: true, publisher: "Dropbox Inc.", startupImpact: "Medium"),
-            LoginItem(name: "Spotify", path: "/Applications/Spotify.app", isEnabled: false, publisher: "Spotify Ltd.", startupImpact: "High")
-        ]
+        let items = LoginItemsReader.shared.readLoginItems()
 
         DispatchQueue.main.async {
-            self.loginItems = sampleItems
+            self.loginItems = items
         }
     }
 
@@ -89,6 +85,16 @@ class LaunchItemManager: ObservableObject {
     func toggleItem(_ item: any LaunchItem) {
         Task {
             do {
+                // Check if it's a login item
+                if item is LoginItem {
+                    LoginItemsReader.shared.toggleLoginItem(item as! LoginItem)
+                    await MainActor.run {
+                        self.errorMessage = nil
+                        self.loadAllItems()
+                    }
+                    return
+                }
+
                 // LaunchAgent veya LaunchDaemon için launchctl ile enable/disable
                 let process = Process()
                 process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
