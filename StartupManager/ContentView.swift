@@ -7,7 +7,8 @@ struct ContentView: View {
     @State private var searchText = ""
     @State private var selectedItems = Set<String>()
     @State private var showingBatchRemoveConfirmation = false
-    @State private var itemToRemove: (any LaunchItem)?
+    @State private var showingSingleRemoveConfirmation = false
+    @State private var itemToRemovePath: String?
 
     var body: some View {
         ZStack {
@@ -23,6 +24,10 @@ struct ContentView: View {
                     launchAgentsCount: manager.launchAgents.count,
                     launchDaemonsCount: manager.launchDaemons.count
                 )
+                .onChange(of: selectedCategory) { _ in
+                    selectedItems.removeAll()
+                    searchText = ""
+                }
             } detail: {
                 // Step 3.3: Interactive Features - Search & Filter
                 DetailPanelView(
@@ -35,7 +40,8 @@ struct ContentView: View {
                     onRefresh: { manager.loadAllItems() },
                     onToggleItem: { item in manager.toggleItem(item) },
                     onRemoveItem: { item in
-                        itemToRemove = item
+                        itemToRemovePath = item.path
+                        showingSingleRemoveConfirmation = true
                     },
                     onDismissError: { manager.errorMessage = nil },
                     onBatchDisable: { batchDisableItems() },
@@ -45,16 +51,24 @@ struct ContentView: View {
             .onAppear {
                 manager.loadAllItems()
             }
-            .alert("Remove Item", isPresented: .constant(itemToRemove != nil), presenting: itemToRemove) { item in
+            .alert("Remove Item", isPresented: $showingSingleRemoveConfirmation) {
                 Button("Cancel", role: .cancel) {
-                    itemToRemove = nil
+                    itemToRemovePath = nil
                 }
                 Button("Remove", role: .destructive) {
-                    manager.removeItem(item)
-                    itemToRemove = nil
+                    if let path = itemToRemovePath,
+                       let item = filteredItems.first(where: { $0.path == path }) {
+                        manager.removeItem(item)
+                    }
+                    itemToRemovePath = nil
                 }
-            } message: { item in
-                Text("Are you sure you want to remove '\(item.name)'? This action cannot be undone.")
+            } message: {
+                if let path = itemToRemovePath,
+                   let item = filteredItems.first(where: { $0.path == path }) {
+                    Text("Are you sure you want to remove '\(item.name)'? This action cannot be undone.")
+                } else {
+                    Text("Are you sure you want to remove this item? This action cannot be undone.")
+                }
             }
             .alert("Remove \(selectedItems.count) Items", isPresented: $showingBatchRemoveConfirmation) {
                 Button("Cancel", role: .cancel) { }

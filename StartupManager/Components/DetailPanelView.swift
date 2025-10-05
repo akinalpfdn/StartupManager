@@ -68,6 +68,9 @@ struct DetailPanelView: View {
                                 .foregroundColor(.secondary)
                             TextField("Search items...", text: $searchText)
                                 .textFieldStyle(.plain)
+                                .onChange(of: searchText) { _ in
+                                    selectedItems.removeAll()
+                                }
                         }
                         .padding(8)
                         .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
@@ -106,6 +109,7 @@ struct DetailPanelView: View {
                             LaunchItemRow(item: item) {
                                 onToggleItem(item)
                             }
+                            .tag(item.path)
                             .contextMenu {
                                 Button {
                                     onToggleItem(item)
@@ -125,6 +129,7 @@ struct DetailPanelView: View {
                             }
                         }
                     }
+                    .id(searchText + category)
                     .scrollContentBackground(.hidden)
                 } else {
                     Text("Select a category to view startup items")
