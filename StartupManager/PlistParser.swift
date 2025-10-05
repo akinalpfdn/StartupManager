@@ -1,6 +1,42 @@
 import Foundation
 
 class PlistParser {
+    // Cache loaded services to avoid repeated launchctl calls
+    private static var loadedServicesCache: Set<String>?
+    private static var cacheTimestamp: Date?
+    private static let cacheTimeout: TimeInterval = 5.0 // 5 seconds
+
+    static func refreshLoadedServicesCache() {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+        process.arguments = ["list"]
+
+        let pipe = Pipe()
+        process.standardOutput = pipe
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            if let output = String(data: data, encoding: .utf8) {
+                var services = Set<String>()
+                let lines = output.components(separatedBy: .newlines)
+                for line in lines {
+                    let parts = line.split(separator: "\t")
+                    if parts.count >= 3 {
+                        let label = String(parts[2])
+                        services.insert(label)
+                    }
+                }
+                loadedServicesCache = services
+                cacheTimestamp = Date()
+            }
+        } catch {
+            loadedServicesCache = Set()
+        }
+    }
+
     // Validate plist for security - only check for malicious patterns
     static func validatePlist(_ plist: [String: Any]) -> Bool {
         // Check for suspicious executable paths (but don't require Program/ProgramArguments)
@@ -83,22 +119,13 @@ class PlistParser {
 
     // Helper function to check if a service is loaded
     private static func isServiceLoaded(label: String) -> Bool {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-        process.arguments = ["list", label]
-
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = pipe
-
-        do {
-            try process.run()
-            process.waitUntilExit()
-
-            // If exit code is 0, service is loaded
-            return process.terminationStatus == 0
-        } catch {
-            return false
+        // Check if cache needs refresh
+        if loadedServicesCache == nil ||
+           cacheTimestamp == nil ||
+           Date().timeIntervalSince(cacheTimestamp!) > cacheTimeout {
+            refreshLoadedServicesCache()
         }
+
+        return loadedServicesCache?.contains(label) ?? false
     }
 }

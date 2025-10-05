@@ -1,5 +1,6 @@
 import Foundation
 import ServiceManagement
+import AppKit
 
 class BackgroundActivityReader {
     static let shared = BackgroundActivityReader()
@@ -7,93 +8,26 @@ class BackgroundActivityReader {
     func readBackgroundActivities() -> [BackgroundActivity] {
         var activities: [BackgroundActivity] = []
 
-        // Read from sfltool (macOS background items manager)
-        activities.append(contentsOf: readFromSFLTool())
+        // Try to read from backgrounditems.btm database
+        activities.append(contentsOf: readFromBackgroundItemsDB())
+
+        // Deduplicate by bundle identifier
+        var seen = Set<String>()
+        activities = activities.filter { item in
+            let key = item.bundleIdentifier ?? item.path
+            if seen.contains(key) {
+                return false
+            }
+            seen.insert(key)
+            return true
+        }
 
         return activities.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-    }
-
-    private func readFromSFLTool() -> [BackgroundActivity] {
-        var items: [BackgroundActivity] = []
-
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/sfltool")
-        process.arguments = ["dumpbtm"]
-
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = pipe
-
-        do {
-            try process.run()
-            process.waitUntilExit()
-
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            if let output = String(data: data, encoding: .utf8) {
-                items = parseBackgroundItems(output: output)
-            }
-        } catch {
-            // Fallback to reading from backgrounditems database
-            items = readFromBackgroundItemsDB()
-        }
-
-        return items
-    }
-
-    private func parseBackgroundItems(output: String) -> [BackgroundActivity] {
-        var items: [BackgroundActivity] = []
-        let lines = output.components(separatedBy: .newlines)
-
-        var currentItem: [String: String] = [:]
-
-        for line in lines {
-            let trimmed = line.trimmingCharacters(in: .whitespaces)
-
-            if trimmed.isEmpty && !currentItem.isEmpty {
-                // End of an item
-                if let name = currentItem["Name"] ?? currentItem["Label"],
-                   let bundleID = currentItem["BundleIdentifier"] {
-
-                    let enabled = currentItem["Enabled"]?.lowercased() != "false"
-                    let path = currentItem["Path"] ?? currentItem["URL"] ?? ""
-
-                    let type: BackgroundActivity.BackgroundActivityType
-                    if currentItem["Type"]?.contains("Login") == true {
-                        type = .loginItem
-                    } else if currentItem["Type"]?.contains("Agent") == true {
-                        type = .agent
-                    } else {
-                        type = .backgroundItem
-                    }
-
-                    items.append(BackgroundActivity(
-                        name: name,
-                        path: path,
-                        isEnabled: enabled,
-                        publisher: currentItem["Developer"],
-                        startupImpact: "Low",
-                        bundleIdentifier: bundleID,
-                        type: type
-                    ))
-                }
-                currentItem.removeAll()
-            } else if trimmed.contains(":") {
-                let components = trimmed.components(separatedBy: ":")
-                if components.count >= 2 {
-                    let key = components[0].trimmingCharacters(in: .whitespaces)
-                    let value = components[1...].joined(separator: ":").trimmingCharacters(in: .whitespaces)
-                    currentItem[key] = value
-                }
-            }
-        }
-
-        return items
     }
 
     private func readFromBackgroundItemsDB() -> [BackgroundActivity] {
         var items: [BackgroundActivity] = []
 
-        // Try to read from backgrounditems.btm database
         let homeDir = FileManager.default.homeDirectoryForCurrentUser
         let dbPath = homeDir
             .appendingPathComponent("Library")
@@ -101,53 +35,127 @@ class BackgroundActivityReader {
             .appendingPathComponent("com.apple.backgroundtaskmanagementagent")
             .appendingPathComponent("backgrounditems.btm")
 
-        if FileManager.default.fileExists(atPath: dbPath.path),
-           let data = try? Data(contentsOf: dbPath),
-           let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] {
+        // Check if we have permission to read the file
+        guard FileManager.default.fileExists(atPath: dbPath.path) else {
+            return items
+        }
 
-            if let objects = plist["$objects"] as? [Any] {
-                for obj in objects {
-                    if let dict = obj as? [String: Any],
-                       let bundleID = dict["bundleIdentifier"] as? String ?? dict["identifier"] as? String,
-                       !bundleID.isEmpty {
+        guard FileManager.default.isReadableFile(atPath: dbPath.path) else {
+            // Request Full Disk Access
+            DispatchQueue.main.async {
+                self.showFullDiskAccessAlert()
+            }
+            return items
+        }
 
-                        let name = dict["name"] as? String ?? bundleID.components(separatedBy: ".").last ?? bundleID
-                        let path = dict["path"] as? String ?? dict["url"] as? String ?? ""
-                        let enabled = dict["enabled"] as? Bool ?? true
+        // Try to parse the plist
+        guard let data = try? Data(contentsOf: dbPath),
+              let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any],
+              let objects = plist["$objects"] as? [Any] else {
+            return items
+        }
 
-                        items.append(BackgroundActivity(
-                            name: name,
-                            path: path,
-                            isEnabled: enabled,
-                            publisher: dict["developer"] as? String,
-                            startupImpact: "Low",
-                            bundleIdentifier: bundleID,
-                            type: .backgroundItem
-                        ))
-                    }
-                }
+        // Parse NSKeyedArchiver format
+        var containers: [[String: Any]] = []
+
+        for obj in objects {
+            if let dict = obj as? [String: Any],
+               let className = (dict["$class"] as? [String: Any])?["$classname"] as? String ?? dict["$classname"] as? String,
+               className == "BackgroundItemContainer" || className.contains("Container") {
+                containers.append(dict)
+            }
+        }
+
+        // Extract items from containers
+        for container in containers {
+            if let bookmark = extractBookmarkInfo(from: container, objects: objects) {
+                items.append(BackgroundActivity(
+                    name: bookmark.name,
+                    path: bookmark.path,
+                    isEnabled: bookmark.isEnabled,
+                    publisher: bookmark.publisher,
+                    startupImpact: "Low",
+                    bundleIdentifier: bookmark.bundleID,
+                    type: .backgroundItem
+                ))
             }
         }
 
         return items
     }
 
+    private func extractBookmarkInfo(from container: [String: Any], objects: [Any]) -> (name: String, path: String, isEnabled: Bool, bundleID: String?, publisher: String?)? {
+        // This is a simplified parser - NSKeyedArchiver is complex
+        // Extract what we can from the bookmark data
+
+        if let bookmarkRef = container["bookmark"],
+           let bookmarkIndex = (bookmarkRef as? [String: Any])?["value"] as? Int,
+           bookmarkIndex < objects.count,
+           let bookmarkDict = objects[bookmarkIndex] as? [String: Any],
+           let dataRef = bookmarkDict["data"],
+           let dataIndex = (dataRef as? [String: Any])?["value"] as? Int,
+           dataIndex < objects.count,
+           let bookmarkData = objects[dataIndex] as? Data {
+
+            // Try to resolve bookmark to URL
+            var isStale = false
+            if let url = try? URL(resolvingBookmarkData: bookmarkData, bookmarkDataIsStale: &isStale) {
+                let name = url.deletingPathExtension().lastPathComponent
+                let bundleID = Bundle(url: url)?.bundleIdentifier
+
+                return (
+                    name: name,
+                    path: url.path,
+                    isEnabled: true,
+                    bundleID: bundleID,
+                    publisher: nil
+                )
+            }
+        }
+
+        return nil
+    }
+
+    private func showFullDiskAccessAlert() {
+        let alert = NSAlert()
+        alert.messageText = "Full Disk Access Required"
+        alert.informativeText = "StartupManager needs Full Disk Access to read Background Items.\n\n1. Open System Settings → Privacy & Security → Full Disk Access\n2. Add StartupManager to the list\n3. Restart the app"
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "Open System Settings")
+        alert.addButton(withTitle: "Cancel")
+
+        if alert.runModal() == .alertFirstButtonReturn {
+            // Open System Settings
+            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")!)
+        }
+    }
+
     func toggleBackgroundActivity(_ item: BackgroundActivity) {
-        // Use sfltool to enable/disable
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/sfltool")
+        // Background items can't be easily toggled programmatically
+        // Show alert to user
+        DispatchQueue.main.async {
+            let alert = NSAlert()
+            alert.messageText = "Manual Action Required"
+            alert.informativeText = "Background Items must be toggled in System Settings.\n\nGo to: System Settings → General → Login Items → Background Items"
+            alert.alertStyle = .informational
+            alert.addButton(withTitle: "Open System Settings")
+            alert.addButton(withTitle: "Cancel")
 
-        if item.isEnabled {
-            process.arguments = ["remove-item", "-l", item.bundleIdentifier ?? item.name]
-        } else {
-            process.arguments = ["add-item", "-l", item.bundleIdentifier ?? item.name]
+            if alert.runModal() == .alertFirstButtonReturn {
+                NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.LoginItems-Settings.extension")!)
+            }
         }
+    }
 
-        do {
-            try process.run()
-            process.waitUntilExit()
-        } catch {
-            print("Failed to toggle background activity: \(error)")
-        }
+    // Check if we have Full Disk Access
+    func hasFullDiskAccess() -> Bool {
+        let homeDir = FileManager.default.homeDirectoryForCurrentUser
+        let testPath = homeDir
+            .appendingPathComponent("Library")
+            .appendingPathComponent("Application Support")
+            .appendingPathComponent("com.apple.backgroundtaskmanagementagent")
+            .appendingPathComponent("backgrounditems.btm")
+
+        return FileManager.default.isReadableFile(atPath: testPath.path)
     }
 }
