@@ -25,7 +25,6 @@
 		4A0000026A000001 /* PerformanceAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000027A000001 /* PerformanceAnalyzer.swift */; };
 		4A0000029A000001 /* PrivilegeHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000030A000001 /* PrivilegeHelper.swift */; };
 		4A0000031A000001 /* LoginItemsReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000032A000001 /* LoginItemsReader.swift */; };
-		4A0000033A000001 /* BackgroundActivityReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000034A000001 /* BackgroundActivityReader.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,7 +48,6 @@
 		4A0000028A000001 /* StartupManager.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = StartupManager.entitlements; sourceTree = "<group>"; };
 		4A0000030A000001 /* PrivilegeHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivilegeHelper.swift; sourceTree = "<group>"; };
 		4A0000032A000001 /* LoginItemsReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemsReader.swift; sourceTree = "<group>"; };
-		4A0000034A000001 /* BackgroundActivityReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundActivityReader.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,7 +85,6 @@
 				4A0000027A000001 /* PerformanceAnalyzer.swift */,
 				4A0000030A000001 /* PrivilegeHelper.swift */,
 				4A0000032A000001 /* LoginItemsReader.swift */,
-				4A0000034A000001 /* BackgroundActivityReader.swift */,
 				4A0000014A000001 /* TransparentWindowView.swift */,
 				4A0000028A000001 /* StartupManager.entitlements */,
 				4A0000006A000001 /* Assets.xcassets */,
@@ -200,7 +197,6 @@
 				4A0000026A000001 /* PerformanceAnalyzer.swift in Sources */,
 				4A0000029A000001 /* PrivilegeHelper.swift in Sources */,
 				4A0000031A000001 /* LoginItemsReader.swift in Sources */,
-				4A0000033A000001 /* BackgroundActivityReader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

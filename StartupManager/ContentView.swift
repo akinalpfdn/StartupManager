@@ -27,11 +27,9 @@ struct ContentView: View {
                     loginItemsCount: manager.loginItems.count,
                     launchAgentsCount: manager.launchAgents.count,
                     launchDaemonsCount: manager.launchDaemons.count,
-                    backgroundActivitiesCount: manager.backgroundActivities.count,
                     loginItems: manager.loginItems,
                     launchAgents: manager.launchAgents,
-                    launchDaemons: manager.launchDaemons,
-                    backgroundActivities: manager.backgroundActivities
+                    launchDaemons: manager.launchDaemons
                 )
                 .onChange(of: selectedCategory) { _ in
                     selectedItems.removeAll()
@@ -110,8 +108,6 @@ struct ContentView: View {
             return manager.launchAgents
         case "Launch Daemons":
             return manager.launchDaemons
-        case "Background Activities":
-            return manager.backgroundActivities
         default:
             return []
         }
