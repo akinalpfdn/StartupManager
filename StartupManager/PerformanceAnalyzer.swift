@@ -25,7 +25,7 @@ class PerformanceAnalyzer {
             cpuImpactScore += getDaemonCPUImpact(daemon)
             memoryImpact = estimateMemoryUsage(daemon)
         } else if item is LoginItem {
-            startupTime += 0.5 // Login items typically add 0.5-1s
+            startupTime += 0.2 // Login items typically add 200ms
             cpuImpactScore = 1
             memoryImpact = 50
         }
@@ -56,7 +56,7 @@ class PerformanceAnalyzer {
     }
 
     private func analyzeAgent(_ agent: LaunchAgent) -> TimeInterval {
-        var time: TimeInterval = 0.2 // Base time for launch agent
+        var time: TimeInterval = 0.05 // Base time for launch agent (50ms)
 
         guard let plistContent = PlistParser.parsePlist(at: agent.path) else {
             return time
@@ -64,29 +64,29 @@ class PerformanceAnalyzer {
 
         // Check RunAtLoad - if true, runs at startup
         if let runAtLoad = plistContent["RunAtLoad"] as? Bool, runAtLoad {
-            time += 0.3
+            time += 0.1 // 100ms
         }
 
         // Check KeepAlive - if true, continuously running
         if let keepAlive = plistContent["KeepAlive"] as? Bool, keepAlive {
-            time += 0.4
+            time += 0.15 // 150ms
         }
 
         // Check StartInterval - periodic tasks add overhead
         if plistContent["StartInterval"] != nil {
-            time += 0.2
+            time += 0.05 // 50ms
         }
 
         // Check WatchPaths - file monitoring adds overhead
         if let watchPaths = plistContent["WatchPaths"] as? [String], !watchPaths.isEmpty {
-            time += 0.3
+            time += 0.08 // 80ms
         }
 
         return time
     }
 
     private func analyzeDaemon(_ daemon: LaunchDaemon) -> TimeInterval {
-        var time: TimeInterval = 0.3 // Daemons have higher base impact
+        var time: TimeInterval = 0.1 // Daemons have higher base impact (100ms)
 
         guard let plistContent = PlistParser.parsePlist(at: daemon.path) else {
             return time
@@ -94,16 +94,16 @@ class PerformanceAnalyzer {
 
         // Daemons typically have higher impact
         if let runAtLoad = plistContent["RunAtLoad"] as? Bool, runAtLoad {
-            time += 0.5
+            time += 0.15 // 150ms
         }
 
         if let keepAlive = plistContent["KeepAlive"] as? Bool, keepAlive {
-            time += 0.6
+            time += 0.2 // 200ms
         }
 
         // Network listeners add significant overhead
         if plistContent["Sockets"] != nil {
-            time += 0.4
+            time += 0.12 // 120ms
         }
 
         return time
@@ -190,37 +190,38 @@ class PerformanceAnalyzer {
         launchAgents: [LaunchAgent],
         launchDaemons: [LaunchDaemon]
     ) -> (totalTime: TimeInterval, enabledTime: TimeInterval, itemCount: Int) {
-        var totalTime: TimeInterval = 0.0
-        var enabledTime: TimeInterval = 0.0
-        var count = 0
+        // Most items start in parallel, so we calculate the "critical path"
+        // We estimate ~30% overlap, so total = sum * 0.3 + max
+        var allTimes: [TimeInterval] = []
+        var enabledTimes: [TimeInterval] = []
+        var enabledCount = 0
 
-        for item in loginItems {
+        for item in loginItems where item.isEnabled {
             let metrics = analyzeItem(item)
-            totalTime += metrics.estimatedStartupTime
-            if item.isEnabled {
-                enabledTime += metrics.estimatedStartupTime
-            }
-            count += 1
+            allTimes.append(metrics.estimatedStartupTime)
+            enabledTimes.append(metrics.estimatedStartupTime)
+            enabledCount += 1
         }
 
-        for item in launchAgents {
+        for item in launchAgents where item.isEnabled {
             let metrics = analyzeItem(item)
-            totalTime += metrics.estimatedStartupTime
-            if item.isEnabled {
-                enabledTime += metrics.estimatedStartupTime
-            }
-            count += 1
+            allTimes.append(metrics.estimatedStartupTime)
+            enabledTimes.append(metrics.estimatedStartupTime)
+            enabledCount += 1
         }
 
-        for item in launchDaemons {
+        for item in launchDaemons where item.isEnabled {
             let metrics = analyzeItem(item)
-            totalTime += metrics.estimatedStartupTime
-            if item.isEnabled {
-                enabledTime += metrics.estimatedStartupTime
-            }
-            count += 1
+            allTimes.append(metrics.estimatedStartupTime)
+            enabledTimes.append(metrics.estimatedStartupTime)
+            enabledCount += 1
         }
 
-        return (totalTime, enabledTime, count)
+        // Calculate realistic impact: max time + 30% of sum (for serial portions)
+        let maxTime = enabledTimes.max() ?? 0.0
+        let sumTime = enabledTimes.reduce(0, +)
+        let estimatedImpact = maxTime + (sumTime * 0.3)
+
+        return (sumTime, estimatedImpact, enabledCount)
     }
 }
