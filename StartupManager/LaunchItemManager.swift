@@ -5,6 +5,7 @@ class LaunchItemManager: ObservableObject {
     @Published var loginItems: [LoginItem] = []
     @Published var launchAgents: [LaunchAgent] = []
     @Published var launchDaemons: [LaunchDaemon] = []
+    @Published var backgroundActivities: [BackgroundActivity] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
 
@@ -27,6 +28,7 @@ class LaunchItemManager: ObservableObject {
             await loadLoginItems()
             await loadLaunchAgents()
             await loadLaunchDaemons()
+            await loadBackgroundActivities()
 
             DispatchQueue.main.async {
                 self.isLoading = false
@@ -82,6 +84,14 @@ class LaunchItemManager: ObservableObject {
         }
     }
 
+    private func loadBackgroundActivities() async {
+        let items = BackgroundActivityReader.shared.readBackgroundActivities()
+
+        DispatchQueue.main.async {
+            self.backgroundActivities = items
+        }
+    }
+
     func toggleItem(_ item: any LaunchItem) {
         Task {
             do {
@@ -98,6 +108,27 @@ class LaunchItemManager: ObservableObject {
                                 isEnabled: !self.loginItems[index].isEnabled,
                                 publisher: self.loginItems[index].publisher,
                                 startupImpact: self.loginItems[index].startupImpact
+                            )
+                        }
+                    }
+                    return
+                }
+
+                // Check if it's a background activity
+                if let bgActivity = item as? BackgroundActivity {
+                    BackgroundActivityReader.shared.toggleBackgroundActivity(bgActivity)
+                    await MainActor.run {
+                        self.errorMessage = nil
+                        // Update local state only
+                        if let index = self.backgroundActivities.firstIndex(where: { $0.path == item.path }) {
+                            self.backgroundActivities[index] = BackgroundActivity(
+                                name: bgActivity.name,
+                                path: bgActivity.path,
+                                isEnabled: !bgActivity.isEnabled,
+                                publisher: bgActivity.publisher,
+                                startupImpact: bgActivity.startupImpact,
+                                bundleIdentifier: bgActivity.bundleIdentifier,
+                                type: bgActivity.type
                             )
                         }
                     }

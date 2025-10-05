@@ -5,14 +5,17 @@ struct SidebarView: View {
     let loginItemsCount: Int
     let launchAgentsCount: Int
     let launchDaemonsCount: Int
+    let backgroundActivitiesCount: Int
     let loginItems: [LoginItem]
     let launchAgents: [LaunchAgent]
     let launchDaemons: [LaunchDaemon]
+    let backgroundActivities: [BackgroundActivity]
 
     private let categories = [
         ("Login Items", "person.circle"),
         ("Launch Agents", "app.badge"),
-        ("Launch Daemons", "gearshape.2")
+        ("Launch Daemons", "gearshape.2"),
+        ("Background Activities", "square.stack.3d.up")
     ]
 
     private var totalImpact: (totalTime: TimeInterval, enabledTime: TimeInterval, itemCount: Int) {
@@ -83,6 +86,8 @@ struct SidebarView: View {
             return launchAgentsCount
         case "Launch Daemons":
             return launchDaemonsCount
+        case "Background Activities":
+            return backgroundActivitiesCount
         default:
             return 0
         }
