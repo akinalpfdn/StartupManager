@@ -6,20 +6,32 @@ struct ContentView: View {
 
     var body: some View {
         NavigationSplitView {
-            VStack {
+            // Step 3.1: Sidebar with Liquid Glass
+            VStack(spacing: 0) {
                 Text("Startup Items")
                     .font(.headline)
                     .padding()
+                    .frame(maxWidth: .infinity)
+
                 List(["Login Items", "Launch Agents", "Launch Daemons"], id: \.self, selection: $selectedCategory) { category in
                     HStack {
+                        Image(systemName: getCategoryIcon(for: category))
+                            .foregroundColor(.accentColor)
                         Text(category)
                         Spacer()
                         Text("\(getItemCount(for: category))")
+                            .font(.caption)
+                            .fontWeight(.semibold)
                             .foregroundColor(.secondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(.quaternary, in: Capsule())
                     }
+                    .padding(.vertical, 4)
                 }
+                .scrollContentBackground(.hidden)
             }
-            .frame(minWidth: 200)
+            .frame(minWidth: 220)
         } detail: {
             if manager.isLoading {
                 VStack {
@@ -29,14 +41,18 @@ struct ContentView: View {
                 }
                 .frame(minWidth: 600, minHeight: 400)
             } else {
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 0) {
                     HStack {
                         Text("StartupManager")
                             .font(.largeTitle)
+                            .fontWeight(.semibold)
                         Spacer()
-                        Button("Refresh") {
+                        Button {
                             manager.loadAllItems()
+                        } label: {
+                            Label("Refresh", systemImage: "arrow.clockwise")
                         }
+                        .buttonStyle(.borderless)
                     }
                     .padding()
 
@@ -45,41 +61,50 @@ struct ContentView: View {
                             Image(systemName: "exclamationmark.triangle")
                                 .foregroundColor(.orange)
                             Text(errorMessage)
-                                .foregroundColor(.orange)
+                                .foregroundColor(.primary)
                             Spacer()
                             Button("Dismiss") {
                                 manager.errorMessage = nil
                             }
+                            .buttonStyle(.glass)
                         }
                         .padding()
                         .background(Color.orange.opacity(0.1))
-                        .cornerRadius(8)
+                        .cornerRadius(12)
                         .padding(.horizontal)
+                        .padding(.bottom, 8)
                     }
 
                     if !selectedCategory.isEmpty {
                         Text(selectedCategory)
                             .font(.title2)
+                            .fontWeight(.semibold)
                             .padding(.horizontal)
+                            .padding(.top, 8)
 
                         List {
                             ForEach(getItems(for: selectedCategory), id: \.path) { item in
-                                HStack {
-                                    VStack(alignment: .leading) {
+                                HStack(spacing: 12) {
+                                    VStack(alignment: .leading, spacing: 4) {
                                         Text(item.name)
                                             .font(.headline)
                                         Text(item.path)
                                             .font(.caption)
                                             .foregroundColor(.secondary)
+                                            .lineLimit(1)
                                         if let publisher = item.publisher {
-                                            Text(publisher)
-                                                .font(.caption)
-                                                .foregroundColor(.blue)
+                                            HStack(spacing: 4) {
+                                                Image(systemName: "building.2")
+                                                    .font(.caption2)
+                                                Text(publisher)
+                                                    .font(.caption)
+                                            }
+                                            .foregroundColor(.blue)
                                         }
                                     }
                                     Spacer()
 
-                                    HStack {
+                                    HStack(spacing: 12) {
                                         Toggle("", isOn: .constant(item.isEnabled))
                                             .toggleStyle(SwitchToggleStyle())
                                             .onChange(of: item.isEnabled) { _ in
@@ -87,28 +112,37 @@ struct ContentView: View {
                                             }
 
                                         Text(item.startupImpact)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 2)
-                                            .background(getImpactColor(item.startupImpact))
-                                            .foregroundColor(.white)
-                                            .cornerRadius(4)
                                             .font(.caption)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.white)
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 6)
+                                            .background(getImpactColor(item.startupImpact), in: Capsule())
                                     }
                                 }
-                                .padding(.vertical, 2)
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 12)
+                                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
                                 .contextMenu {
-                                    Button("Toggle Enabled") {
+                                    Button {
                                         manager.toggleItem(item)
+                                    } label: {
+                                        Label("Toggle Enabled", systemImage: "power")
                                     }
-                                    Button("Remove", role: .destructive) {
+                                    Button(role: .destructive) {
                                         manager.removeItem(item)
+                                    } label: {
+                                        Label("Remove", systemImage: "trash")
                                     }
-                                    Button("Show in Finder") {
+                                    Button {
                                         NSWorkspace.shared.selectFile(item.path, inFileViewerRootedAtPath: "")
+                                    } label: {
+                                        Label("Show in Finder", systemImage: "folder")
                                     }
                                 }
                             }
                         }
+                        .scrollContentBackground(.hidden)
                     } else {
                         Text("Select a category to view startup items")
                             .foregroundColor(.secondary)
@@ -118,6 +152,7 @@ struct ContentView: View {
                 .frame(minWidth: 600, minHeight: 400)
             }
         }
+        .background(.thinMaterial)
         .onAppear {
             manager.loadAllItems()
         }
@@ -159,6 +194,19 @@ struct ContentView: View {
             return .red
         default:
             return .gray
+        }
+    }
+
+    private func getCategoryIcon(for category: String) -> String {
+        switch category {
+        case "Login Items":
+            return "person.circle"
+        case "Launch Agents":
+            return "app.badge"
+        case "Launch Daemons":
+            return "gearshape.2"
+        default:
+            return "questionmark.circle"
         }
     }
 }

@@ -42,14 +42,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		4A0000F00A000001 = {
-			isa = PBXGroup;
-			children = (
-				4A0000010A000001 /* StartupManager */,
-				4A0000000FA000001 /* Products */,
-			);
-			sourceTree = "<group>";
-		};
 		4A0000000FA000001 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -72,6 +64,14 @@
 				4A0000006A000001 /* Assets.xcassets */,
 			);
 			path = StartupManager;
+			sourceTree = "<group>";
+		};
+		4A0000F00A000001 = {
+			isa = PBXGroup;
+			children = (
+				4A0000010A000001 /* StartupManager */,
+				4A0000000FA000001 /* Products */,
+			);
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -288,6 +288,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.startup.manager;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -313,6 +314,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.startup.manager;
 				PRODUCT_NAME = "$(TARGET_NAME)";
