@@ -17,6 +17,10 @@
 		4A000000FA000001 /* PlistParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000010A000002 /* PlistParser.swift */; };
 		4A0000011A000001 /* LaunchItemManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000012A000001 /* LaunchItemManager.swift */; };
 		4A0000013A000001 /* TransparentWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000014A000001 /* TransparentWindowView.swift */; };
+		4A0000015A000001 /* LaunchItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000016A000001 /* LaunchItemRow.swift */; };
+		4A0000017A000001 /* ImpactIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000018A000001 /* ImpactIndicator.swift */; };
+		4A0000019A000001 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000020A000001 /* SidebarView.swift */; };
+		4A0000021A000001 /* DetailPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0000022A000001 /* DetailPanelView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +35,10 @@
 		4A0000010A000002 /* PlistParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlistParser.swift; sourceTree = "<group>"; };
 		4A0000012A000001 /* LaunchItemManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchItemManager.swift; sourceTree = "<group>"; };
 		4A0000014A000001 /* TransparentWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransparentWindowView.swift; sourceTree = "<group>"; };
+		4A0000016A000001 /* LaunchItemRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchItemRow.swift; sourceTree = "<group>"; };
+		4A0000018A000001 /* ImpactIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImpactIndicator.swift; sourceTree = "<group>"; };
+		4A0000020A000001 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
+		4A0000022A000001 /* DetailPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailPanelView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +65,7 @@
 			children = (
 				4A0000002A000001 /* StartupManagerApp.swift */,
 				4A0000004A000001 /* ContentView.swift */,
+				4A0000023A000001 /* Components */,
 				4A0000008A000001 /* LaunchItem.swift */,
 				4A000000AA000001 /* LoginItem.swift */,
 				4A000000CA000001 /* LaunchAgent.swift */,
@@ -67,6 +76,17 @@
 				4A0000006A000001 /* Assets.xcassets */,
 			);
 			path = StartupManager;
+			sourceTree = "<group>";
+		};
+		4A0000023A000001 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				4A0000016A000001 /* LaunchItemRow.swift */,
+				4A0000018A000001 /* ImpactIndicator.swift */,
+				4A0000020A000001 /* SidebarView.swift */,
+				4A0000022A000001 /* DetailPanelView.swift */,
+			);
+			path = Components;
 			sourceTree = "<group>";
 		};
 		4A0000F00A000001 = {
@@ -155,6 +175,10 @@
 				4A000000FA000001 /* PlistParser.swift in Sources */,
 				4A0000011A000001 /* LaunchItemManager.swift in Sources */,
 				4A0000013A000001 /* TransparentWindowView.swift in Sources */,
+				4A0000015A000001 /* LaunchItemRow.swift in Sources */,
+				4A0000017A000001 /* ImpactIndicator.swift in Sources */,
+				4A0000019A000001 /* SidebarView.swift in Sources */,
+				4A0000021A000001 /* DetailPanelView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
