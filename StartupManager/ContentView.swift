@@ -3,8 +3,13 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var manager = LaunchItemManager()
     @State private var selectedCategory = "Login Items"
+    @State private var window: NSWindow?
 
     var body: some View {
+        ZStack {
+            WindowAccessor(window: $window)
+            TransparentWindowView()
+                .ignoresSafeArea()
         NavigationSplitView {
             // Step 3.1: Sidebar with Liquid Glass
             VStack(spacing: 0) {
@@ -152,9 +157,9 @@ struct ContentView: View {
                 .frame(minWidth: 600, minHeight: 400)
             }
         }
-        .background(.thinMaterial)
         .onAppear {
             manager.loadAllItems()
+        }
         }
     }
 
