@@ -83,12 +83,16 @@ class PlistParser {
         // Check if agent is loaded using launchctl
         let isEnabled = isServiceLoaded(label: label)
 
+        // Determine priority from Nice value
+        let niceValue = plist["Nice"] as? Int
+        let priority = getPriorityFromNice(niceValue)
+
         return LaunchAgent(
             name: name,
             path: url.path,
             isEnabled: isEnabled,
             publisher: plist["Program"] as? String,
-            startupImpact: "Medium",
+            startupImpact: priority,
             label: label
         )
     }
@@ -106,15 +110,33 @@ class PlistParser {
         // Check if daemon is loaded using launchctl
         let isEnabled = isServiceLoaded(label: label)
 
+        // Determine priority from Nice value
+        let priority = getPriorityFromNice(plist["Nice"] as? Int)
+
         return LaunchDaemon(
             name: name,
             path: url.path,
             isEnabled: isEnabled,
             publisher: plist["Program"] as? String,
-            startupImpact: "High",
+            startupImpact: priority,
             label: label,
             keepAlive: keepAlive
         )
+    }
+
+    // Helper function to convert Nice value to priority
+    private static func getPriorityFromNice(_ nice: Int?) -> String {
+        guard let nice = nice else {
+            return "Medium" // Default if Nice is not set
+        }
+
+        if nice <= -5 {
+            return "High"
+        } else if nice >= 5 {
+            return "Low"
+        } else {
+            return "Medium"
+        }
     }
 
     // Helper function to check if a service is loaded
