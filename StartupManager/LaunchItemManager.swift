@@ -104,9 +104,22 @@ class LaunchItemManager: ObservableObject {
                     return
                 }
 
+                // Check if it's a system file - requires admin privileges
+                if item.path.hasPrefix("/System/") || item.path.hasPrefix("/Library/") {
+                    await MainActor.run {
+                        self.errorMessage = "System files require admin privileges.\n\nTo toggle system Launch Agents/Daemons, use Terminal:\n\nsudo launchctl \(item.isEnabled ? "unload" : "load") \(item.path)\n\nFile: \(item.path)"
+                    }
+                    return
+                }
+
                 // LaunchAgent veya LaunchDaemon için launchctl ile enable/disable
                 let process = Process()
                 process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
+
+                let outputPipe = Pipe()
+                let errorPipe = Pipe()
+                process.standardOutput = outputPipe
+                process.standardError = errorPipe
 
                 if item.isEnabled {
                     // Disable: unload
@@ -147,11 +160,26 @@ class LaunchItemManager: ObservableObject {
                         }
                     }
                 } else {
-                    throw NSError(domain: "LaunchItemManager", code: Int(process.terminationStatus))
+                    // Capture error output
+                    let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                    let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+                    let errorOutput = String(data: errorData, encoding: .utf8) ?? ""
+                    let stdOutput = String(data: outputData, encoding: .utf8) ?? ""
+
+                    let combinedOutput = (errorOutput + stdOutput).trimmingCharacters(in: .whitespacesAndNewlines)
+
+                    let errorMsg: String
+                    if !combinedOutput.isEmpty {
+                        errorMsg = "launchctl error (exit code \(process.terminationStatus)):\n\n\(combinedOutput)\n\nFile: \(item.path)"
+                    } else {
+                        errorMsg = "launchctl failed with exit code \(process.terminationStatus)\n\nFile: \(item.path)"
+                    }
+
+                    throw NSError(domain: "LaunchItemManager", code: Int(process.terminationStatus), userInfo: [NSLocalizedDescriptionKey: errorMsg])
                 }
             } catch {
                 await MainActor.run {
-                    self.errorMessage = "Failed to toggle item: \(error.localizedDescription). You may need admin privileges."
+                    self.errorMessage = error.localizedDescription
                 }
             }
         }
@@ -173,8 +201,24 @@ class LaunchItemManager: ObservableObject {
                     let unloadProcess = Process()
                     unloadProcess.executableURL = URL(fileURLWithPath: "/bin/launchctl")
                     unloadProcess.arguments = ["unload", item.path]
+
+                    let errorPipe = Pipe()
+                    unloadProcess.standardError = errorPipe
+
                     try? unloadProcess.run()
                     unloadProcess.waitUntilExit()
+
+                    // Check if unload failed
+                    if unloadProcess.terminationStatus != 0 {
+                        let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                        let errorOutput = String(data: errorData, encoding: .utf8) ?? ""
+
+                        if !errorOutput.isEmpty {
+                            throw NSError(domain: "LaunchItemManager", code: -1, userInfo: [
+                                NSLocalizedDescriptionKey: "Failed to unload before removal:\n\n\(errorOutput)\n\nFile: \(item.path)"
+                            ])
+                        }
+                    }
                 }
 
                 // Sonra dosyayı sil
@@ -187,7 +231,7 @@ class LaunchItemManager: ObservableObject {
                 }
             } catch {
                 await MainActor.run {
-                    self.errorMessage = "Failed to remove item: \(error.localizedDescription). You may need admin privileges."
+                    self.errorMessage = error.localizedDescription
                 }
             }
         }
