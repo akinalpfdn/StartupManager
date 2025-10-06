@@ -37,6 +37,18 @@ A native macOS application for managing startup items, launch agents, launch dae
 
 ## Installation
 
+### For Users (Recommended)
+
+**Download the latest release:**
+
+1. Go to [Releases](https://github.com/akinalpfdn/StartupManager/releases)
+2. Download `StartupManager.dmg`
+3. Open the DMG file
+4. Drag **StartupManager.app** to your **Applications** folder
+5. Launch from Applications (Right-click → Open for first launch)
+
+### For Developers
+
 1. Clone the repository
 ```bash
 git clone https://github.com/yourusername/StartupManager.git
